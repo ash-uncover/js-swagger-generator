@@ -3,13 +3,19 @@
         "allowJs": true,
         "checkJs": true,
         "declaration": true,
-        "module": "ES6",
-        "moduleResolution": "node",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
         "noImplicitAny": true,
-        "outDir": "./build",
+        "outDir": "build",
+        "paths": {
+            "src": [
+                "./src"
+            ]
+        },
+        "rootDir": "src",
         "sourceMap": true,
         "strict": true,
-		"target": "es5"
+        "target": "ES6"
     },
     "exclude": [
         "bin",

@@ -1,7 +1,7 @@
 /* tslint:disable:no-empty */
 
-import * as GeneratorModel from './generator-models'
-import * as GeneratorWriter from './generator-writer'
+import * as GeneratorModel from './generator-models.js'
+import * as GeneratorWriter from './generator-writer.js'
 
 import * as fs from 'fs'
 

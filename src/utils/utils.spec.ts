@@ -1,6 +1,6 @@
 /* tslint:disable:no-empty */
 
-import * as utils from './utils'
+import * as utils from './utils.js'
 
 describe('utils', () => {
 

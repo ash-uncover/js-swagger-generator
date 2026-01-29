@@ -1,6 +1,6 @@
-import * as SwaggerUtils from './swagger-utils'
-import * as OpenAPIModels from './swagger-model'
-import * as GeneratorModel from '../generator/generator-models'
+import * as SwaggerUtils from './swagger-utils.js'
+import * as OpenAPIModels from './swagger-model.js'
+import * as GeneratorModel from '../generator/generator-models.js'
 
 describe('swagger-utils', () => {
 

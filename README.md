@@ -10,7 +10,7 @@
 Install with npm
 
 ```
-npm i --save-d @uncover/js-swagger-generator
+npm i --save-d @sol.ac/js-swagger-generator
 ```
 
 ### Commands

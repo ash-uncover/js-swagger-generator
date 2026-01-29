@@ -70,41 +70,53 @@ export const buildSchema = (key: string, schema: OpenAPISchema): Model => {
 }
 
 export const buildSchemaProperties = (properties: JsonSchemaProperties, required: string[] | undefined): ModelProperty[] => {
-    return Object.keys(properties)
-        .sort()
-        .map((key: string) => {
-            const isRequired = Boolean(required && required.includes(key))
-            const property = properties[key]
-            return buildObjectProperty(key, property, isRequired)
-        })
+    try {
+        return Object.keys(properties)
+            .sort()
+            .map((key: string) => {
+                const isRequired = Boolean(required && required.includes(key))
+                const property = properties[key]
+                return buildObjectProperty(key, property, isRequired)
+            })
+    } catch (error) {
+        throw new Error('Error while buildSchemaProperties: ' + (error as Error).message)
+    }
 }
 
 export const buildSchemaAllOf = (allOf: JsonSchemaAllOf[], required: string[] | undefined): { ext?: string[], properties?: ModelProperty[] } => {
-    const result = allOf.reduce((acc: { ext?: string[], properties?: ModelProperty[] }, item: JsonSchemaAllOf) => {
-        const ref = item.$ref
-        const properties = item.properties
-        if (ref) {
-            acc.ext = acc.ext || []
-            acc.ext.push(getPropertyType(item))
-        } else if (properties) {
-            acc.properties = acc.properties || []
-            acc.properties.push(...buildSchemaProperties(properties, required))
-        } else {
-            throw new Error('Unsupported allOf entry')
-        }
-        return acc
-    }, {})
-    return result
+    try {
+        const result = allOf.reduce((acc: { ext?: string[], properties?: ModelProperty[] }, item: JsonSchemaAllOf) => {
+            const ref = item.$ref
+            const properties = item.properties
+            if (ref) {
+                acc.ext = acc.ext || []
+                acc.ext.push(getPropertyType(item))
+            } else if (properties) {
+                acc.properties = acc.properties || []
+                acc.properties.push(...buildSchemaProperties(properties, required))
+            } else {
+                throw new Error('Unsupported allOf entry')
+            }
+            return acc
+        }, {})
+        return result
+    } catch (error) {
+        throw new Error('Error while buildSchemaAllOf: ' + (error as Error).message)
+    }
 }
 
 export const buildObjectProperty = (key: string, property: JsonSchemaProperty, required: boolean): ModelProperty => {
-    utils.log(`  - buildProperty ${key}`)
-    const result: ModelProperty = {
-        name: key,
-        required,
-        type: getPropertyType(property)
+    try {
+        utils.log(`  - buildProperty ${key}`)
+        const result: ModelProperty = {
+            name: key,
+            required,
+            type: getPropertyType(property)
+        }
+        return result
+    } catch (error) {
+        throw new Error(`Error while buildObjectProperty: ${key} ${(error as Error).message}`)
     }
-    return result
 }
 
 export const getPropertyType = (property: any): string => {
@@ -141,7 +153,7 @@ export const getPropertyType = (property: any): string => {
             .map(getPropertyType)
             .join(' | ')
     }
-    throw new Error('Unsupported property')
+    throw new Error(`Unsupported property: ${JSON.stringify(property, null, 2)}`)
 }
 
 
@@ -270,51 +282,63 @@ export const checkOperationId = (operationId: string): string => {
 }
 
 export const getUrlParameters = (parameters: (OpenAPIParameter | OpenAPIReference)[] | undefined): ServiceEndpointParameter[] | undefined => {
-    const params: ServiceEndpointParameter[] | undefined = undefined
-    if (parameters) {
-        return parameters
-            // @ts-ignore
-            .filter(param => param.in === 'path')
-            // @ts-ignore
-            .map((param: OpenAPIParameter) => ({
-                name: checkOperationId(param.name),
-                required: Boolean(param.required),
-                type: getPropertyType(param.schema),
-            }))
+    try {
+        const params: ServiceEndpointParameter[] | undefined = undefined
+        if (parameters) {
+            return parameters
+                // @ts-ignore
+                .filter(param => param.in === 'path')
+                // @ts-ignore
+                .map((param: OpenAPIParameter) => ({
+                    name: checkOperationId(param.name),
+                    required: Boolean(param.required),
+                    type: getPropertyType(param.schema),
+                }))
+        }
+        return params
+    } catch (error) {
+        throw new Error('Error while getUrlParameters: ' + (error as Error).message)
     }
-    return params
 }
 
 export const getQueryParameters = (parameters: (OpenAPIParameter | OpenAPIReference)[] | undefined): ServiceEndpointParameter[] | undefined => {
-    const params: ServiceEndpointParameter[] | undefined = undefined
-    if (parameters) {
-        return parameters
-            // @ts-ignore
-            .filter(param => param.in === 'query')
-            // @ts-ignore
-            .map((param: OpenAPIParameter): ServiceEndpointParameter => {
-                return {
-                    name: param.name,
-                    required: Boolean(param.required),
-                    type: getPropertyType(param.schema),
-                }
-            })
+    try {
+        const params: ServiceEndpointParameter[] | undefined = undefined
+        if (parameters) {
+            return parameters
+                // @ts-ignore
+                .filter(param => param.in === 'query')
+                // @ts-ignore
+                .map((param: OpenAPIParameter): ServiceEndpointParameter => {
+                    return {
+                        name: param.name,
+                        required: Boolean(param.required),
+                        type: getPropertyType(param.schema),
+                    }
+                })
+        }
+        return params
+    } catch (error) {
+        throw new Error('Error while getQueryParameters: ' + (error as Error).message)
     }
-    return params
 }
 
 export const getPayloadType = (requestBody: any): string | undefined => {
-    let payloadType: string | undefined
-    if (requestBody) {
-        if (requestBody.content['application/json']) {
-            payloadType = getPropertyType(requestBody.content['application/json'].schema)
-        } else if (requestBody.content['*/*']) {
-            payloadType = getPropertyType(requestBody.content['*/*'].schema)
-        } else if (requestBody.content['multipart/form-data']) {
-            payloadType = 'any'
-        } else {
-            throw new Error('Unsupported payload type: ' + JSON.stringify(requestBody))
+    try {
+        let payloadType: string | undefined
+        if (requestBody) {
+            if (requestBody.content['application/json']) {
+                payloadType = getPropertyType(requestBody.content['application/json'].schema)
+            } else if (requestBody.content['*/*']) {
+                payloadType = getPropertyType(requestBody.content['*/*'].schema)
+            } else if (requestBody.content['multipart/form-data']) {
+                payloadType = 'any'
+            } else {
+                throw new Error('Unsupported payload type: ' + JSON.stringify(requestBody))
+            }
         }
+        return payloadType
+    } catch (error) {
+        throw new Error('Error while getPayloadType: ' + (error as Error).message)
     }
-    return payloadType
 }

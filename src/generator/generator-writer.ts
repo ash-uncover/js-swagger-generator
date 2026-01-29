@@ -57,7 +57,7 @@ export const writeService = (file: string, models: Model[], service: Service) =>
 
 export const convertModelImport = (name: string, models: Model[]): string => {
     const result: string[] = []
-    result.push(`import { Service } from '@uncover/js-utils-fetch'`)
+    result.push(`import { Service } from '@sol.ac/js-utils-fetch'`)
     result.push(`import {`)
     result.push(...models.map(model => `${indent(1)}${model.name},`))
     result.push(`} from './${name}.model'`)
@@ -94,19 +94,19 @@ export const convertEndpoint = (service: Service, endpoint: ServiceEndpoint): st
 
     result.push(`export const ${name} = async (service:any${params.length ? ', ' : ''}${params.join(', ')}) => {`)
     const url = endpoint.url.split('{').join('${')
-    result.push(`${indent(1)}${queryParams?.length ? 'let' : 'const'} url = \`${url}${queryParams?.length ? '?' : ''}\``)
+    result.push(`${indent(1)}${queryParams?.length ? 'let' : 'const'} url = \`${url}\``)
     if (queryParams && queryParams.length) {
-        result.push(`${indent(1)}const urlQueryParams = []`)
+        result.push(`${indent(1)}const urlParams = new URLSearchParams()`)
         queryParams.forEach((param) => {
             if (param.required) {
-                result.push(`${indent(1)}urlQueryParams.push(\`${encodeURIComponent(param.name)}=\${encodeURIComponent(String(query['${param.name}']))}\`)`)
+                result.push(`${indent(1)}urlParams.set('${param.name}', String(query['${param.name}']))`)
             } else {
                 result.push(`${indent(1)}if (typeof query['${param.name}'] !== 'undefined') {`)
-                result.push(`${indent(2)}urlQueryParams.push(\`${encodeURIComponent(param.name)}=\${encodeURIComponent(String(query['${param.name}']))}\`)`)
+                result.push(`${indent(2)}urlParams.set('${param.name}', String(query['${param.name}']))`)
                 result.push(`${indent(1)}}`)
             }
         })
-        result.push(`${indent(1)}url += urlQueryParams.join('&')`)
+        result.push(`${indent(1)}url += \`?\${urlParams.toString()}\``)
     }
     result.push(`${indent(1)}const options = {`)
     result.push(`${indent(2)}method: '${method}',`)
